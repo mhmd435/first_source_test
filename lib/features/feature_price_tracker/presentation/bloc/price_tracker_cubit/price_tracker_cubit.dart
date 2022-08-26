@@ -23,7 +23,7 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
   GetSymbolTicksUseCase getSymbolTicksUseCase;
   CancelSymbolTicksUseCase cancelSymbolTicksUseCase;
   String? ticksId;
-
+  double? prevPrice;
 
   PriceTrackerCubit(
       this.getAllSymbolsUseCase,
@@ -31,7 +31,8 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
       this.cancelSymbolTicksUseCase) : super(PriceTrackerState(
     allSymbolsStatus: AllSymbolsLoading(),
     currentMarket: "",
-    symbolTicksStatus: SymbolTicksInitial()
+    symbolTicksStatus: SymbolTicksInitial(),
+    priceColor: Colors.grey
   ));
 
   /// call and state manage for symbol api call
@@ -69,11 +70,19 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
   }
 
   /// change market by dropDown and rebuild the second dropdown
-  void changeMarket(String market) => emit(state.copyWith(newCurrentMarket: market));
+  void changeMarket(String market) {
+
+    /// close ticks
+    if(ticksId != null){
+      cancelTicks(ticksId!);
+    }
+
+    emit(state.copyWith(newCurrentMarket: market,newSymbolTicksStatus: SymbolTicksInitial()));
+  }
 
   /// call and state manage for symbol Ticks api call
   Future<void> callSymbolTicksApi(ActiveSymbols activeSymbols) async {
-    
+
     /// close ticks
     if(ticksId != null){
       cancelTicks(ticksId!);
@@ -83,11 +92,8 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
     emit(state.copyWith(
         newSymbolTicksStatus: SymbolTicksLoading()),);
 
-
-
     /// get All Champion Data
     final DataState dataState = await getSymbolTicksUseCase(activeSymbols.symbol!);
-
 
     /// emit completed -- api call Success
     if(dataState is DataSuccess){
@@ -95,16 +101,35 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
 
       /// listen to api stream
       tickStream.listen((event) {
+
         /// serialization
         final TickEntity tickEntity = TickModel.fromJson(jsonDecode(event));
-        /// get tick id for cancel --- next time
-        ticksId = tickEntity.tick!.id;
 
-        emit(state.copyWith(
-          newSymbolTicksStatus: SymbolTicksCompleted(tickEntity),
-        ));
+        /// error handling
+        if(tickEntity.tickError != null){
+            emit(state.copyWith(
+                newSymbolTicksStatus: SymbolTicksError(tickEntity.tickError!.message!),
+            ));
+
+        }else{
+          /// get tick id for cancel --- next time
+          ticksId = tickEntity.tick!.id;
+
+          /// manage color of price text
+          Color color = Colors.grey;
+          if(prevPrice != null){
+            color = getColor(tickEntity);
+          }
+
+          prevPrice = tickEntity.tick!.quote;
+
+
+          emit(state.copyWith(
+              newSymbolTicksStatus: SymbolTicksCompleted(tickEntity),
+              newPriceColor: color
+          ));
+        }
       });
-
     }
 
     /// emit error --  api call Failed
@@ -116,5 +141,16 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
 
   Future<void> cancelTicks(String ticksId) async {
     DataState dataState = await cancelSymbolTicksUseCase(ticksId);
+  }
+
+  Color getColor(TickEntity tickEntity) {
+    double currentPrice = tickEntity.tick!.quote!;
+    if(prevPrice! > currentPrice){
+      return Colors.red;
+    }else if(prevPrice! < currentPrice){
+      return Colors.green;
+    }else{
+      return Colors.grey;
+    }
   }
 }

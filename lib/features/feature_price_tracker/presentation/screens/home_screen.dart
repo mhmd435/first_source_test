@@ -185,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         final SymbolTicksCompleted symbolTicksCompleted = state.symbolTicksStatus as SymbolTicksCompleted;
                         TickEntity tickEntity = symbolTicksCompleted.tickEntity;
 
-                        return Text(tickEntity.tick!.quote!.toString() , style: textTheme.titleSmall?.apply(fontSizeDelta: 2),);
+                        return Text(tickEntity.tick!.quote!.toString() , style: textTheme.titleSmall?.apply(fontSizeDelta: 2,color: state.priceColor),);
                       }
 
                       /// show Error state
@@ -193,22 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         final SymbolTicksError symbolTickError = state.symbolTicksStatus as SymbolTicksError;
 
                         return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children:  [
-                              Text(symbolTickError.errorMessage,style: GoogleFonts.ubuntu(color: Colors.white,fontSize: 15),),
-                              const SizedBox(height: 12,),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  primary: theme.primaryColor,
-                                ),
-                                onPressed: (){
-                                  /// call symbol data again
-                                  BlocProvider.of<PriceTrackerCubit>(context).callSymbolsApi();
-                                },
-                                child: const Text(Strings.reload),)
-                            ],
-                          ),
+                          child: Text(symbolTickError.errorMessage,style: textTheme.titleSmall,),
                         );
                       }
 

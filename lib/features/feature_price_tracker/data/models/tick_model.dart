@@ -10,11 +10,13 @@ class TickModel extends TickEntity{
     EchoReq? echoReq,
     String? msgType,
     Subscription? subscription,
-    Tick? tick,}) : super(
+    Tick? tick,
+    TickError? error}) : super(
     echoReq: echoReq,
     msgType: msgType,
     subscription: subscription,
-    tick: tick
+    tick: tick,
+    tickError : error
   );
 
   factory TickModel.fromJson(dynamic json) {
@@ -22,7 +24,8 @@ class TickModel extends TickEntity{
       echoReq: json['echo_req'] != null ? EchoReq.fromJson(json['echo_req']) : null,
       msgType: json['msg_type'],
       subscription: json['subscription'] != null ? Subscription.fromJson(json['subscription']) : null,
-      tick: json['tick'] != null ? Tick.fromJson(json['tick']) : null
+      tick: json['tick'] != null ? Tick.fromJson(json['tick']) : null,
+      error: json['error'] != null ? TickError.fromJson(json['error']) : null
     );
   }
 
@@ -87,6 +90,52 @@ class Tick {
     map['pip_size'] = pipSize;
     map['quote'] = quote;
     map['symbol'] = symbol;
+    return map;
+  }
+
+}
+
+class TickError {
+  TickError({
+    this.code,
+    this.details,
+    this.message,});
+
+  TickError.fromJson(dynamic json) {
+    code = json['code'];
+    details = json['details'] != null ? Details.fromJson(json['details']) : null;
+    message = json['message'];
+  }
+  String? code;
+  Details? details;
+  String? message;
+
+  Map<String, dynamic> toJson() {
+    final map = <String, dynamic>{};
+    map['code'] = code;
+    if (details != null) {
+      map['details'] = details?.toJson();
+    }
+    map['message'] = message;
+    return map;
+  }
+
+}
+
+/// field : "symbol"
+
+class Details {
+  Details({
+    this.field,});
+
+  Details.fromJson(dynamic json) {
+    field = json['field'];
+  }
+  String? field;
+
+  Map<String, dynamic> toJson() {
+    final map = <String, dynamic>{};
+    map['field'] = field;
     return map;
   }
 

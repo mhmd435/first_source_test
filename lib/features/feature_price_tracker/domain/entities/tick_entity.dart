@@ -8,8 +8,9 @@ class TickEntity extends Equatable {
   final String? msgType;
   final Subscription? subscription;
   final Tick? tick;
+  final TickError? tickError;
 
-  const TickEntity({this.echoReq, this.msgType, this.subscription, this.tick});
+  const TickEntity({this.echoReq, this.msgType, this.subscription, this.tick,this.tickError});
 
   @override
   // TODO: implement props
@@ -17,7 +18,8 @@ class TickEntity extends Equatable {
     echoReq,
     msgType,
     subscription,
-    tick
+    tick,
+    tickError
   ];
 
 }
