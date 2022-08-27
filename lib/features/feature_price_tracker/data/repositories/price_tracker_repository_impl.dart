@@ -11,7 +11,7 @@ class PriceTrackerRepositoryImpl extends PriceTrackerRepository {
   WebSocketChannel? tickChannel;
 
   @override
-  Future<DataState<Stream>> fetchSymbols() async {
+  Future<DataState<dynamic>> fetchSymbols() async {
     try{
       var channel = apiProvider.callAllSymbol();
 
