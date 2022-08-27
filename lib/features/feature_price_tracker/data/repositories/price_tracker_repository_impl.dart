@@ -25,13 +25,11 @@ class PriceTrackerRepositoryImpl extends PriceTrackerRepository {
   }
 
   @override
-  Future<DataState<Stream>> fetchSymbolTicks(symbol) async{
+  Future<DataState<WebSocketChannel>> fetchSymbolTicks(symbol) async{
     try{
       tickChannel = apiProvider.callSymbolTicks(symbol);
 
-      /// convert json to models class
-      // final SymbolEntity symbolEntity = SymbolModel.fromJson(streamData);
-      return DataSuccess(tickChannel!.stream);
+      return DataSuccess(tickChannel!);
     }catch(e){
       print(e.toString());
       return const DataFailed("please check your connection...");
@@ -42,7 +40,6 @@ class PriceTrackerRepositoryImpl extends PriceTrackerRepository {
   Future<DataState<String>> cancelSymbolTicks(id) async{
     try{
       /// close tick
-      tickChannel!.sink.close();
       apiProvider.callSymbolTicks(id);
 
       /// convert json to models class

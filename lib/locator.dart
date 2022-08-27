@@ -7,7 +7,6 @@ import 'package:first_source_test/features/feature_price_tracker/domain/usecases
 import 'package:first_source_test/features/feature_price_tracker/domain/usecases/get_all_symbols_usecase.dart';
 import 'package:first_source_test/features/feature_price_tracker/presentation/bloc/theme_cubit/theme_cubit.dart';
 import 'package:get_it/get_it.dart';
-import 'features/feature_price_tracker/domain/usecases/get_symbol_ticks_usecase.dart';
 import 'features/feature_price_tracker/presentation/bloc/price_tracker_cubit/price_tracker_cubit.dart';
 
 GetIt locator = GetIt.instance;
@@ -21,7 +20,6 @@ Future<void> initLocator() async {
 
   /// use case provide
   locator.registerSingleton<GetAllSymbolsUseCase>(GetAllSymbolsUseCase(locator<PriceTrackerRepository>()));
-  locator.registerSingleton<GetSymbolTicksUseCase>(GetSymbolTicksUseCase(locator<PriceTrackerRepository>()));
   locator.registerSingleton<CancelSymbolTicksUseCase>(CancelSymbolTicksUseCase(locator<PriceTrackerRepository>()));
 
 
@@ -29,7 +27,7 @@ Future<void> initLocator() async {
   locator.registerSingleton<ThemeCubit>(ThemeCubit());
   locator.registerSingleton<PriceTrackerCubit>(PriceTrackerCubit(
       locator<GetAllSymbolsUseCase>(),
-      locator<GetSymbolTicksUseCase>(),
+      locator<PriceTrackerRepository>(),
       locator<CancelSymbolTicksUseCase>()
   ));
 }

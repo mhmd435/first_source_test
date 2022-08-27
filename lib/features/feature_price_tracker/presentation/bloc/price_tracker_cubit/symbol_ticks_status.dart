@@ -15,11 +15,11 @@ class SymbolTicksLoading extends SymbolTicksStatus {
 }
 
 class SymbolTicksCompleted extends SymbolTicksStatus {
-  final TickEntity tickEntity;
-  SymbolTicksCompleted(this.tickEntity);
+  final WebSocketChannel tickChannel;
+  SymbolTicksCompleted(this.tickChannel);
 
   @override
-  List<Object?> get props => [tickEntity];
+  List<Object?> get props => [tickChannel];
 }
 
 class SymbolTicksError extends SymbolTicksStatus {

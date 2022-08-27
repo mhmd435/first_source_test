@@ -3,16 +3,15 @@ import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:first_source_test/core/usecases/usecase.dart';
-import 'package:first_source_test/features/feature_price_tracker/data/models/tick_model.dart';
 import 'package:first_source_test/features/feature_price_tracker/domain/entities/tick_entity.dart';
+import 'package:first_source_test/features/feature_price_tracker/domain/repositories/price_tracker_repository.dart';
 import 'package:flutter/material.dart';
-
+import 'package:web_socket_channel/web_socket_channel.dart';
 import '../../../../../core/resources/data_state.dart';
 import '../../../data/models/symbol_model.dart';
 import '../../../domain/entities/symbol_entity.dart';
 import '../../../domain/usecases/cancel_symbol_ticks_usecase.dart';
 import '../../../domain/usecases/get_all_symbols_usecase.dart';
-import '../../../domain/usecases/get_symbol_ticks_usecase.dart';
 
 part 'all_symbols_status.dart';
 part 'price_tracker_state.dart';
@@ -20,14 +19,12 @@ part 'symbol_ticks_status.dart';
 
 class PriceTrackerCubit extends Cubit<PriceTrackerState> {
   GetAllSymbolsUseCase getAllSymbolsUseCase;
-  GetSymbolTicksUseCase getSymbolTicksUseCase;
+  PriceTrackerRepository priceTrackerRepository;
   CancelSymbolTicksUseCase cancelSymbolTicksUseCase;
-  String? ticksId;
-  double? prevPrice;
 
   PriceTrackerCubit(
       this.getAllSymbolsUseCase,
-      this.getSymbolTicksUseCase,
+      this.priceTrackerRepository,
       this.cancelSymbolTicksUseCase) : super(PriceTrackerState(
     allSymbolsStatus: AllSymbolsLoading(),
     currentMarket: "",
@@ -70,66 +67,34 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
   }
 
   /// change market by dropDown and rebuild the second dropdown
-  void changeMarket(String market) {
+  void changeMarket(String market,String? ticksId) {
 
     /// close ticks
     if(ticksId != null){
-      cancelTicks(ticksId!);
+      cancelTicks(ticksId);
     }
 
     emit(state.copyWith(newCurrentMarket: market,newSymbolTicksStatus: SymbolTicksInitial()));
   }
 
   /// call and state manage for symbol Ticks api call
-  Future<void> callSymbolTicksApi(ActiveSymbols activeSymbols) async {
+  Future<void> callSymbolTicksApi(ActiveSymbols activeSymbols, String? ticksId) async {
+    /// emit loading status
+    emit(state.copyWith(newSymbolTicksStatus: SymbolTicksLoading()),);
 
     /// close ticks
     if(ticksId != null){
-      cancelTicks(ticksId!);
+      await cancelTicks(ticksId);
     }
 
-    /// emit loading status
-    emit(state.copyWith(
-        newSymbolTicksStatus: SymbolTicksLoading()),);
-
     /// get All Champion Data
-    final DataState dataState = await getSymbolTicksUseCase(activeSymbols.symbol!);
+    final DataState dataState = await priceTrackerRepository.fetchSymbolTicks(activeSymbols.symbol!);
 
     /// emit completed -- api call Success
     if(dataState is DataSuccess){
-      Stream tickStream = dataState.data;
-
-      /// listen to api stream
-      tickStream.listen((event) {
-
-        /// serialization
-        final TickEntity tickEntity = TickModel.fromJson(jsonDecode(event));
-
-        /// error handling
-        if(tickEntity.tickError != null){
-            emit(state.copyWith(
-                newSymbolTicksStatus: SymbolTicksError(tickEntity.tickError!.message!),
-            ));
-
-        }else{
-          /// get tick id for cancel --- next time
-          ticksId = tickEntity.tick!.id;
-
-          /// manage color of price text
-          Color color = Colors.grey;
-          if(prevPrice != null){
-            color = getColor(tickEntity);
-          }
-
-          prevPrice = tickEntity.tick!.quote;
-
-
           emit(state.copyWith(
-              newSymbolTicksStatus: SymbolTicksCompleted(tickEntity),
-              newPriceColor: color
+              newSymbolTicksStatus: SymbolTicksCompleted(dataState.data),
           ));
-        }
-      });
     }
 
     /// emit error --  api call Failed
@@ -143,14 +108,5 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
     DataState dataState = await cancelSymbolTicksUseCase(ticksId);
   }
 
-  Color getColor(TickEntity tickEntity) {
-    double currentPrice = tickEntity.tick!.quote!;
-    if(prevPrice! > currentPrice){
-      return Colors.red;
-    }else if(prevPrice! < currentPrice){
-      return Colors.green;
-    }else{
-      return Colors.grey;
-    }
-  }
+
 }
