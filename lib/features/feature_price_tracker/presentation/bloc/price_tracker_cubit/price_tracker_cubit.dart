@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:first_source_test/core/usecases/usecase.dart';
 import 'package:first_source_test/features/feature_price_tracker/data/models/tick_model.dart';
 import 'package:first_source_test/features/feature_price_tracker/domain/entities/tick_entity.dart';
+import 'package:first_source_test/features/feature_price_tracker/presentation/utils/ColorHandler.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/resources/data_state.dart';
@@ -24,6 +25,8 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
   CancelSymbolTicksUseCase cancelSymbolTicksUseCase;
   String? ticksId;
   double? prevPrice;
+  String? prevTick;
+  bool shouldCheck = false;
 
   PriceTrackerCubit(
       this.getAllSymbolsUseCase,
@@ -74,6 +77,8 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
 
     /// close ticks
     if(ticksId != null){
+      // استریم لغو میشود و از این پس باید بوسیله shouldCheck تمام emit های غیرمجاز بررسی شود
+      // shouldCheck = true;
       cancelTicks(ticksId!);
     }
 
@@ -85,6 +90,8 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
 
     /// close ticks
     if(ticksId != null){
+      // استریم لغو میشود و از این پس باید بوسیله shouldCheck تمام emit های غیرمجاز بررسی شود
+      shouldCheck = true;
       cancelTicks(ticksId!);
     }
 
@@ -116,18 +123,50 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
           ticksId = tickEntity.tick!.id;
 
           /// manage color of price text
-          Color color = Colors.grey;
-          if(prevPrice != null){
-            color = getColor(tickEntity);
-          }
-
+          Color color = ColorHandler.getColor(tickEntity, prevPrice);
+          /// update prevPrice
           prevPrice = tickEntity.tick!.quote;
 
+          /// what is shouldCheck ->
+          /*
+           چون ممکن است بعد درخواست لغو استریم همچنان استریمی که درحال گوش داده شدن است یک emit بزند
+            متغیری بنام shouldCheck قرار دادم
+           و زمانی که دستور لغو استریم آمد true میشود
+           و اطمینان حاصل میکند تا زمانی که symbol جدید نیامده تمام emit ها از نوع loading باشد
+           */
+          if(shouldCheck){
+            /// same symbol after emit
+            // بعد از لغو استریم اگر tick قبلی و کنونی یکی بود یعنی یک emit غیرمجاز از symbol قبلی دریافت شده
+            // پس نباید دریافت شود و باید همچنان loading را نمایش دهد
+            if(prevTick == tickEntity.echoReq!.ticks){
+              emit(state.copyWith(
+                  newSymbolTicksStatus: SymbolTicksLoading(),
+              ));
 
-          emit(state.copyWith(
-              newSymbolTicksStatus: SymbolTicksCompleted(tickEntity),
-              newPriceColor: color
-          ));
+              // اگر بعد از لغو استریم tick قبلی و کنونی یکی نبود یعنی با موفقیت symbol جدید دریافت شده
+              // و باید به حالت completed برویم با اطلاعات جدید
+            }else{
+              shouldCheck = false;
+
+              emit(state.copyWith(
+                  newSymbolTicksStatus: SymbolTicksCompleted(tickEntity),
+                  newPriceColor: color
+              ));
+            }
+
+
+            // اگر shouldCheck این قسمت false بود یعنی استریم فعال است و باید طبق روال قبل tick های جدید رو دریافت کند
+          }else{
+            emit(state.copyWith(
+                newSymbolTicksStatus: SymbolTicksCompleted(tickEntity),
+                newPriceColor: color
+            ));
+          }
+
+          /// update preTick
+          prevTick = tickEntity.echoReq!.ticks;
+
+
         }
       });
     }
@@ -141,16 +180,5 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
 
   Future<void> cancelTicks(String ticksId) async {
     DataState dataState = await cancelSymbolTicksUseCase(ticksId);
-  }
-
-  Color getColor(TickEntity tickEntity) {
-    double currentPrice = tickEntity.tick!.quote!;
-    if(prevPrice! > currentPrice){
-      return Colors.red;
-    }else if(prevPrice! < currentPrice){
-      return Colors.green;
-    }else{
-      return Colors.grey;
-    }
   }
 }
