@@ -3,11 +3,10 @@ import 'package:first_source_test/config/strings.dart';
 import 'package:first_source_test/features/feature_price_tracker/presentation/bloc/price_tracker_cubit/price_tracker_cubit.dart';
 import 'package:first_source_test/features/feature_price_tracker/presentation/bloc/theme_cubit/theme_cubit.dart';
 import 'package:first_source_test/features/feature_price_tracker/presentation/screens/home_screen.dart';
+import 'package:first_source_test/locator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'locator.dart';
 
 Future<void> main() async {
 
@@ -32,7 +31,7 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   // This widget is the root of your application.
   @override

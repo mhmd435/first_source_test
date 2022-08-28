@@ -42,7 +42,7 @@ class PriceApiProvider {
   }
 
   /// cancel symbols Ticks
-  void callCancelTicks(id) {
+  WebSocketChannel callCancelTicks(id) {
     final channel = WebSocketChannel.connect(
       Uri.parse('wss://ws.binaryws.com/websockets/v3?app_id=1089'),
     );
@@ -55,5 +55,7 @@ class PriceApiProvider {
           }
       ),
     );
+
+    return channel;
   }
 }

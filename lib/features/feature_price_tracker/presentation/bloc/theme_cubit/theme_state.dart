@@ -9,7 +9,7 @@ class ThemeState extends Equatable{
     bool? newIsDarkMode,
   }){
     return ThemeState(
-        isDarkMode: newIsDarkMode ?? isDarkMode
+        isDarkMode: newIsDarkMode ?? isDarkMode,
     );
   }
 

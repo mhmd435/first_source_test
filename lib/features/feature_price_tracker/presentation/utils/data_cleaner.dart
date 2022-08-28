@@ -1,5 +1,5 @@
 
-import '../../data/models/symbol_model.dart';
+import 'package:first_source_test/features/feature_price_tracker/data/models/symbol_model.dart';
 
 class DataCleaner {
   static List<String> getAllMarketNames(data){

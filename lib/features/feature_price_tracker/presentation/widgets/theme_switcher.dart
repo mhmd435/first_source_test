@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ThemeSwitcher extends StatefulWidget {
-  const ThemeSwitcher({Key? key}) : super(key: key);
+  const ThemeSwitcher({super.key});
 
   @override
   State<ThemeSwitcher> createState() => _ThemeSwitcherState();
@@ -21,16 +21,15 @@ class _ThemeSwitcherState extends State<ThemeSwitcher> {
       builder: (context, state){
 
         /// check true/false for set Icon
-        var switchIcon = Icon(state.isDarkMode ? CupertinoIcons.moon_fill : CupertinoIcons.sun_max_fill);
+        final switchIcon = Icon(state.isDarkMode ? CupertinoIcons.moon_fill : CupertinoIcons.sun_max_fill);
 
         return IconButton(
             icon: switchIcon,
             onPressed: () {
               /// change theme with click on IconBtn
               BlocProvider.of<ThemeCubit>(context).changeTheme();
-            });
+            },);
       },
     );
   }
 }
-

@@ -43,13 +43,12 @@ class MockPriceTrackerRepository extends _i1.Mock
                       this, Invocation.method(#fetchSymbols, []))))
           as _i4.Future<_i2.DataState<dynamic>>);
   @override
-  _i4.Future<_i2.DataState<_i4.Stream<dynamic>>> fetchSymbolTicks(
-          dynamic symbol) =>
+  _i4.Future<_i2.DataState<dynamic>> fetchSymbolTicks(dynamic symbol) =>
       (super.noSuchMethod(Invocation.method(#fetchSymbolTicks, [symbol]),
-              returnValue: _i4.Future<_i2.DataState<_i4.Stream<dynamic>>>.value(
-                  _FakeDataState_0<_i4.Stream<dynamic>>(
+              returnValue: _i4.Future<_i2.DataState<dynamic>>.value(
+                  _FakeDataState_0<dynamic>(
                       this, Invocation.method(#fetchSymbolTicks, [symbol]))))
-          as _i4.Future<_i2.DataState<_i4.Stream<dynamic>>>);
+          as _i4.Future<_i2.DataState<dynamic>>);
   @override
   _i4.Future<_i2.DataState<String>> cancelSymbolTicks(dynamic id) =>
       (super.noSuchMethod(Invocation.method(#cancelSymbolTicks, [id]),

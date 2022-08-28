@@ -46,7 +46,9 @@ class MockPriceApiProvider extends _i1.Mock implements _i3.PriceApiProvider {
                   this, Invocation.method(#callSymbolTicks, [symbol])))
           as _i2.WebSocketChannel);
   @override
-  void callCancelTicks(dynamic id) =>
-      super.noSuchMethod(Invocation.method(#callCancelTicks, [id]),
-          returnValueForMissingStub: null);
+  _i2.WebSocketChannel callCancelTicks(dynamic id) =>
+      (super.noSuchMethod(Invocation.method(#callCancelTicks, [id]),
+              returnValue: _FakeWebSocketChannel_0(
+                  this, Invocation.method(#callCancelTicks, [id])))
+          as _i2.WebSocketChannel);
 }

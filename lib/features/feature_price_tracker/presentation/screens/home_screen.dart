@@ -4,16 +4,15 @@ import 'package:first_source_test/features/feature_price_tracker/data/models/sym
 import 'package:first_source_test/features/feature_price_tracker/domain/entities/tick_entity.dart';
 import 'package:first_source_test/features/feature_price_tracker/presentation/bloc/price_tracker_cubit/price_tracker_cubit.dart';
 import 'package:first_source_test/features/feature_price_tracker/presentation/utils/data_cleaner.dart';
+import 'package:first_source_test/features/feature_price_tracker/presentation/widgets/dot_loading_widget.dart';
+import 'package:first_source_test/features/feature_price_tracker/presentation/widgets/theme_switcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../widgets/dot_loading_widget.dart';
-import '../widgets/theme_switcher.dart';
-
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -35,8 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
 
     /// get theme
-    var theme = Theme.of(context);
-    var textTheme = theme.textTheme;
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
 
     return Scaffold(
       backgroundColor: theme.backgroundColor,
@@ -70,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final data = allSymbolsCompleted.data;
 
             /// get all Market names -- forex/cryptoCurrency/...
-            var marketData = DataCleaner.getAllMarketNames(data);
+            final marketData = DataCleaner.getAllMarketNames(data);
 
 
             return Padding(
@@ -124,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     builder: (context, state){
                       /// get all symbol by market name
-                      List<ActiveSymbols> symbols = DataCleaner.getAllSymbolsFromMarketName(data, state.currentMarket);
+                      final List<ActiveSymbols> symbols = DataCleaner.getAllSymbolsFromMarketName(data, state.currentMarket);
 
                       return DropdownButtonFormField<ActiveSymbols>(
                         key: symbolDropDownKey,
@@ -183,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       if(state.symbolTicksStatus is SymbolTicksCompleted){
                         /// casting for getting data
                         final SymbolTicksCompleted symbolTicksCompleted = state.symbolTicksStatus as SymbolTicksCompleted;
-                        TickEntity tickEntity = symbolTicksCompleted.tickEntity;
+                        final TickEntity tickEntity = symbolTicksCompleted.tickEntity;
 
                         return Text(tickEntity.tick!.quote!.toString() , style: textTheme.titleSmall?.apply(fontSizeDelta: 2,color: state.priceColor),);
                       }

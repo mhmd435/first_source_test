@@ -2,18 +2,17 @@ import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:first_source_test/core/resources/data_state.dart';
 import 'package:first_source_test/core/usecases/usecase.dart';
+import 'package:first_source_test/features/feature_price_tracker/data/models/symbol_model.dart';
 import 'package:first_source_test/features/feature_price_tracker/data/models/tick_model.dart';
+import 'package:first_source_test/features/feature_price_tracker/domain/entities/symbol_entity.dart';
 import 'package:first_source_test/features/feature_price_tracker/domain/entities/tick_entity.dart';
-import 'package:first_source_test/features/feature_price_tracker/presentation/utils/ColorHandler.dart';
+import 'package:first_source_test/features/feature_price_tracker/domain/usecases/cancel_symbol_ticks_usecase.dart';
+import 'package:first_source_test/features/feature_price_tracker/domain/usecases/get_all_symbols_usecase.dart';
+import 'package:first_source_test/features/feature_price_tracker/domain/usecases/get_symbol_ticks_usecase.dart';
+import 'package:first_source_test/features/feature_price_tracker/presentation/utils/color_handler.dart';
 import 'package:flutter/material.dart';
-
-import '../../../../../core/resources/data_state.dart';
-import '../../../data/models/symbol_model.dart';
-import '../../../domain/entities/symbol_entity.dart';
-import '../../../domain/usecases/cancel_symbol_ticks_usecase.dart';
-import '../../../domain/usecases/get_all_symbols_usecase.dart';
-import '../../../domain/usecases/get_symbol_ticks_usecase.dart';
 
 part 'all_symbols_status.dart';
 part 'price_tracker_state.dart';
@@ -31,19 +30,19 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
   PriceTrackerCubit(
       this.getAllSymbolsUseCase,
       this.getSymbolTicksUseCase,
-      this.cancelSymbolTicksUseCase) : super(PriceTrackerState(
+      this.cancelSymbolTicksUseCase,) : super(PriceTrackerState(
     allSymbolsStatus: AllSymbolsLoading(),
     currentMarket: "",
     symbolTicksStatus: SymbolTicksInitial(),
-    priceColor: Colors.grey
-  ));
+    priceColor: Colors.grey,
+  ),);
 
   /// call and state manage for symbol api call
   Future<void> callSymbolsApi() async {
 
     /// emit loading status
     emit(state.copyWith(
-      newAllSymbolsStatus: AllSymbolsLoading()),);
+      newAllSymbolsStatus: AllSymbolsLoading(),),);
 
     /// get All Champion Data
     final DataState dataState = await getAllSymbolsUseCase(NoParams());
@@ -51,7 +50,7 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
 
     /// emit completed -- api call Success
     if(dataState is DataSuccess){
-      Stream data = dataState.data;
+      final Stream data = dataState.data;
 
       /// listen to api stream
       data.listen((event) {
@@ -60,7 +59,7 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
 
         emit(state.copyWith(
             newAllSymbolsStatus: AllSymbolsCompleted(symbolEntity.activeSymbols!),
-        ));
+        ),);
       });
 
     }
@@ -97,7 +96,7 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
 
     /// emit loading status
     emit(state.copyWith(
-        newSymbolTicksStatus: SymbolTicksLoading()),);
+        newSymbolTicksStatus: SymbolTicksLoading(),),);
 
     /// get All Champion Data
     final DataState dataState = await getSymbolTicksUseCase(activeSymbols.symbol!);
@@ -116,14 +115,14 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
         if(tickEntity.tickError != null){
             emit(state.copyWith(
                 newSymbolTicksStatus: SymbolTicksError(tickEntity.tickError!.message!),
-            ));
+            ),);
 
         }else{
           /// get tick id for cancel --- next time
           ticksId = tickEntity.tick!.id;
 
           /// manage color of price text
-          Color color = ColorHandler.getColor(tickEntity, prevPrice);
+          final Color color = ColorHandler.getColor(tickEntity.tick!.quote!, prevPrice);
           /// update prevPrice
           prevPrice = tickEntity.tick!.quote;
 
@@ -137,11 +136,11 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
           if(shouldCheck){
             /// same symbol after emit
             // بعد از لغو استریم اگر tick قبلی و کنونی یکی بود یعنی یک emit غیرمجاز از symbol قبلی دریافت شده
-            // پس نباید دریافت شود و باید همچنان loading را نمایش دهد
+            // پس نباید نمایش داده شود و باید همچنان loading را نمایش دهد
             if(prevTick == tickEntity.echoReq!.ticks){
               emit(state.copyWith(
                   newSymbolTicksStatus: SymbolTicksLoading(),
-              ));
+              ),);
 
               // اگر بعد از لغو استریم tick قبلی و کنونی یکی نبود یعنی با موفقیت symbol جدید دریافت شده
               // و باید به حالت completed برویم با اطلاعات جدید
@@ -150,8 +149,8 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
 
               emit(state.copyWith(
                   newSymbolTicksStatus: SymbolTicksCompleted(tickEntity),
-                  newPriceColor: color
-              ));
+                  newPriceColor: color,
+              ),);
             }
 
 
@@ -159,8 +158,8 @@ class PriceTrackerCubit extends Cubit<PriceTrackerState> {
           }else{
             emit(state.copyWith(
                 newSymbolTicksStatus: SymbolTicksCompleted(tickEntity),
-                newPriceColor: color
-            ));
+                newPriceColor: color,
+            ),);
           }
 
           /// update preTick
